@@ -1,11 +1,16 @@
 # parrot-clean
 
-A clean, minimalist i3 desktop environment installer for **Parrot OS** (Home and Security editions) featuring dynamic theme switching powered by **Omarchy's themes**.
+A clean, minimalist i3 desktop environment installer for **Parrot OS** (Home and Security editions) featuring **Omarchy's themes**.
 
 Flat near-black or curated palettes, Geist Mono typography, 1px borders, tear-free compositing, and full ecosystem styling (i3, i3bar, Alacritty, Rofi, GTK-3, Firefox, and Wallpapers).
 
 ---
 
+# My not-AI-generated README:
+
+inspired by xct's kali-clean i implemented the install script with parrot and added the theme switcher I took from omarchy .
+
+--- 
 ## Features
 
 - **Parrot OS native**: Designed for Debian/Parrot repos (`apt`), LightDM display manager compatibility, and MATE coexistence.
@@ -23,7 +28,7 @@ Flat near-black or curated palettes, Geist Mono typography, 1px borders, tear-fr
 Clone and run as your **normal user** (not root):
 
 ```bash
-git clone https://github.com/USER/parrot-clean.git
+git clone https://github.com/Weave7/parrot-clean.git
 cd parrot-clean
 ./install.sh
 ```
