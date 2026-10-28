@@ -1,0 +1,43 @@
+/* ==========================================================================
+   i3-rice userContent.css -- styles Firefox's own pages (about:newtab, etc.)
+   Same palette as userChrome.css, pulled from ~/.config/i3/config.
+   ========================================================================== */
+
+@-moz-document url-prefix("about:newtab"), url-prefix("about:home") {
+  :root {
+    --newtab-background-color: #060606 !important;
+    --newtab-text-primary-color: #ededed !important;
+    --newtab-element-hover-color: #1f1f1f !important;
+    --newtab-element-active-color: #1f1f1f !important;
+    --newtab-border-color: #1f1f1f !important;
+  }
+
+  body {
+    background-color: #060606 !important;
+    font-family: "Geist Mono", monospace !important;
+  }
+
+  /* search pill: same square/thin-border/white-focus treatment as the urlbar */
+  .search-wrapper .search-inner-wrapper {
+    background-color: #060606 !important;
+    border: 1px solid #1f1f1f !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .search-wrapper .search-inner-wrapper:focus-within {
+    border-color: #ffffff !important;
+  }
+
+  /* top sites / cards: flat squares, muted labels */
+  .top-site-outer .tile,
+  .card-outer {
+    background-color: #0a0a0a !important;
+    border: 1px solid #1f1f1f !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .top-site-outer .top-site-title,
+  .card-outer .card-title {
+    color: #a1a1aa !important;
+  }
+}

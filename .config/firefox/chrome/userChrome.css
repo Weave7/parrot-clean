@@ -1,0 +1,189 @@
+/* ==========================================================================
+   i3-rice userChrome.css
+   Palette pulled from ~/.config/i3/config + alacritty.toml (2026-08-30)
+     bg-deep     #060606   client.background / alacritty bg / i3 unfocused bg
+     bg-elevated #0a0a0a   client.focused bg / i3bar bg
+     border      #1f1f1f   client.*_inactive / i3bar separator
+     accent      #ffffff   client.focused border+indicator (the "focused" cue)
+     text        #ededed   client.focused text / alacritty fg
+     text-dim2   #71717a   client.focused_inactive text
+     text-dim1   #52525b   client.unfocused text
+     text-status #a1a1aa   i3bar statusline
+     urgent      #7a2e2e   client.urgent / i3bar urgent_workspace
+   Font: Geist Mono (i3 bar font + alacritty font)
+
+   Requires: about:config -> toolkit.legacyUserProfileCustomizations.stylesheets = true
+   Best paired with Settings > General > Themes > Dark as the base theme.
+   ========================================================================== */
+
+:root {
+  --i3-bg-deep: #060606;
+  --i3-bg-elevated: #0a0a0a;
+  --i3-border: #1f1f1f;
+  --i3-accent: #ffffff;
+  --i3-text: #ededed;
+  --i3-text-dim2: #71717a;
+  --i3-text-dim1: #52525b;
+  --i3-text-status: #a1a1aa;
+  --i3-urgent: #7a2e2e;
+  --i3-font: "Geist Mono", monospace;
+
+  /* remap Firefox's own theme tokens onto the palette */
+  --toolbar-bgcolor: var(--i3-bg-elevated) !important;
+  --toolbar-color: var(--i3-text) !important;
+  --lwt-accent-color: var(--i3-bg-deep) !important;
+  --lwt-text-color: var(--i3-text) !important;
+  --tab-selected-bgcolor: var(--i3-bg-elevated) !important;
+  --toolbarbutton-icon-fill: var(--i3-text-status) !important;
+  --toolbarbutton-hover-background: var(--i3-border) !important;
+  --toolbarbutton-active-background: var(--i3-border) !important;
+  --urlbar-box-bgcolor: var(--i3-bg-deep) !important;
+  --urlbar-box-focus-bgcolor: var(--i3-bg-deep) !important;
+}
+
+/* kill rounded corners everywhere -- i3 windows are pixel-bordered squares */
+* {
+  border-radius: 0 !important;
+  font-family: var(--i3-font) !important;
+}
+
+/* window chrome background */
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar {
+  background-color: var(--i3-bg-deep) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* tab bar: flat, thin 1px separator under the whole strip like an i3bar */
+#TabsToolbar {
+  border-bottom: 1px solid var(--i3-border) !important;
+}
+
+#tabbrowser-tabs,
+.tabbrowser-tab {
+  background: transparent !important;
+}
+
+.tab-background {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* inactive tabs: dim, like client.unfocused text #52525b */
+.tabbrowser-tab:not([selected]) .tab-label {
+  color: var(--i3-text-dim1) !important;
+}
+.tabbrowser-tab:not([selected]) .tab-background {
+  background-color: var(--i3-bg-deep) !important;
+}
+
+/* active tab: white bottom edge, same "focused" cue i3 uses on window borders */
+.tabbrowser-tab[selected] .tab-background {
+  background-color: var(--i3-bg-elevated) !important;
+  box-shadow: inset 0 -2px 0 0 var(--i3-accent) !important;
+}
+.tabbrowser-tab[selected] .tab-label {
+  color: var(--i3-text) !important;
+}
+
+.tabbrowser-tab .tab-close-button {
+  border-radius: 0 !important;
+}
+
+/* new-tab button, hamburger, etc. */
+#tabs-newtab-button,
+#new-tab-button {
+  color: var(--i3-text-dim2) !important;
+}
+
+/* nav-bar / url bar: dark, square, thin #1f1f1f border, white border on focus
+   (mirrors i3's client.focused border going white) */
+#urlbar,
+#searchbar {
+  background-color: var(--i3-bg-deep) !important;
+  color: var(--i3-text) !important;
+  border: 1px solid var(--i3-border) !important;
+  box-shadow: none !important;
+}
+
+#urlbar[focused="true"],
+#searchbar:focus-within {
+  border: 1px solid var(--i3-accent) !important;
+  box-shadow: none !important;
+}
+
+#urlbar-input,
+.urlbar-input {
+  color: var(--i3-text) !important;
+  caret-color: var(--i3-accent) !important;
+}
+
+/* url bar results panel */
+#urlbarView,
+.urlbarView-row {
+  background-color: var(--i3-bg-elevated) !important;
+  color: var(--i3-text) !important;
+}
+.urlbarView-row[selected] {
+  background-color: var(--i3-border) !important;
+}
+
+/* toolbar buttons: muted like i3bar statusline, white on hover/focus */
+toolbarbutton .toolbarbutton-icon {
+  fill: var(--i3-text-status) !important;
+}
+toolbarbutton:hover .toolbarbutton-icon {
+  fill: var(--i3-text) !important;
+}
+
+/* bookmarks toolbar: same muted/accent split */
+#PersonalToolbar {
+  border-top: 1px solid var(--i3-border) !important;
+}
+.bookmark-item {
+  color: var(--i3-text-dim2) !important;
+}
+.bookmark-item:hover {
+  color: var(--i3-text) !important;
+  background-color: var(--i3-border) !important;
+}
+
+/* menu popups (right-click, hamburger menu) */
+menupopup,
+panel {
+  background-color: var(--i3-bg-elevated) !important;
+  color: var(--i3-text) !important;
+  border: 1px solid var(--i3-border) !important;
+}
+menuitem:hover,
+.subviewbutton:hover {
+  background-color: var(--i3-border) !important;
+  color: var(--i3-text) !important;
+}
+
+/* sidebar (bookmarks/history/library) */
+#sidebar-box,
+#sidebar {
+  background-color: var(--i3-bg-deep) !important;
+  color: var(--i3-text) !important;
+}
+#sidebar-header {
+  background-color: var(--i3-bg-elevated) !important;
+  border-bottom: 1px solid var(--i3-border) !important;
+}
+
+/* findbar */
+findbar {
+  background-color: var(--i3-bg-elevated) !important;
+  color: var(--i3-text) !important;
+  border-top: 1px solid var(--i3-border) !important;
+}
+
+/* status/urgent (permission popups, download failure) reuse the i3 urgent red */
+notification[type="critical"],
+.urlbar-permissions-container {
+  background-color: var(--i3-urgent) !important;
+}

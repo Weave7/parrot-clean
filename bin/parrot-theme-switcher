@@ -1,0 +1,22 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+THEME_LIST_CMD="$SCRIPT_DIR/parrot-theme-list"
+THEME_SET_CMD="$SCRIPT_DIR/parrot-theme-set"
+
+SELECTED=""
+if command -v rofi >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    SELECTED="$("$THEME_LIST_CMD" | rofi -dmenu -p "Select Theme" -i || true)"
+elif command -v fzf >/dev/null 2>&1; then
+    SELECTED="$("$THEME_LIST_CMD" | fzf --prompt="Select Theme: " || true)"
+else
+    echo "=== Available Themes ==="
+    "$THEME_LIST_CMD"
+    echo ""
+    read -rp "Enter theme name: " SELECTED
+fi
+
+if [ -n "$SELECTED" ]; then
+    "$THEME_SET_CMD" "$SELECTED"
+fi

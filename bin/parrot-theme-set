@@ -1,0 +1,122 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/parrot"
+CURRENT_THEME_DIR="$STATE_DIR/current/theme"
+CURRENT_THEME_NAME="$STATE_DIR/current/theme.name"
+CURRENT_BG_LINK="$STATE_DIR/current/background"
+
+THEMES_DIR="${PARROT_THEMES_DIR:-$HOME/.config/parrot/themes}"
+[ -d "$THEMES_DIR" ] || THEMES_DIR="$(dirname "$SCRIPT_DIR")/themes"
+TEMPLATES_DIR="$(dirname "$SCRIPT_DIR")/templates"
+[ -d "$TEMPLATES_DIR" ] || TEMPLATES_DIR="$HOME/.config/parrot/templates"
+
+if [ $# -lt 1 ]; then
+    echo "Usage: parrot-theme-set <theme-name>" >&2
+    exit 1
+fi
+
+THEME_NAME="$(echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
+THEME_PATH="$THEMES_DIR/$THEME_NAME"
+
+if [ ! -d "$THEME_PATH" ]; then
+    echo "Error: Theme '$THEME_NAME' not found in $THEMES_DIR" >&2
+    exit 1
+fi
+
+COLORS_FILE="$THEME_PATH/colors.toml"
+if [ ! -f "$COLORS_FILE" ]; then
+    echo "Error: $COLORS_FILE does not exist for theme $THEME_NAME" >&2
+    exit 1
+fi
+
+mkdir -p "$STATE_DIR/current"
+mkdir -p "$HOME/.config/i3"
+mkdir -p "$HOME/.config/alacritty"
+mkdir -p "$HOME/.config/rofi/themes"
+mkdir -p "$HOME/.config/gtk-3.0"
+
+# Link theme state
+rm -rf "$CURRENT_THEME_DIR"
+ln -sfn "$THEME_PATH" "$CURRENT_THEME_DIR"
+echo "$THEME_NAME" > "$CURRENT_THEME_NAME"
+
+RENDERER="$SCRIPT_DIR/render_template.py"
+
+# Detect mode (light vs dark)
+MODE="$("$RENDERER" "$COLORS_FILE" <(echo "{{ mode }}") 2>/dev/null || echo "dark")"
+[ -n "$MODE" ] || MODE="dark"
+
+# 1. Render & Apply i3 colors
+if [ -f "$TEMPLATES_DIR/i3-colors.conf.tpl" ]; then
+    "$RENDERER" "$COLORS_FILE" "$TEMPLATES_DIR/i3-colors.conf.tpl" > "$HOME/.config/i3/colors.conf"
+    if command -v i3-msg >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+        i3-msg reload >/dev/null 2>&1 || true
+    fi
+fi
+
+# 2. Render & Apply Alacritty theme
+if [ -f "$TEMPLATES_DIR/alacritty.toml.tpl" ]; then
+    "$RENDERER" "$COLORS_FILE" "$TEMPLATES_DIR/alacritty.toml.tpl" > "$HOME/.config/alacritty/colors.toml"
+fi
+
+# 3. Render & Apply Rofi theme
+if [ -f "$TEMPLATES_DIR/rofi-theme.rasi.tpl" ]; then
+    "$RENDERER" "$COLORS_FILE" "$TEMPLATES_DIR/rofi-theme.rasi.tpl" > "$HOME/.config/rofi/themes/current.rasi"
+fi
+
+# 4. Apply GTK theme / mode
+if [ "$MODE" = "light" ]; then
+    GTK_THEME="Arc"
+    ICON_THEME="Papirus"
+    COLOR_SCHEME="prefer-light"
+else
+    GTK_THEME="Arc-Dark"
+    ICON_THEME="Papirus-Dark"
+    COLOR_SCHEME="prefer-dark"
+fi
+
+cat > "$HOME/.config/gtk-3.0/settings.ini" <<EOF
+[Settings]
+gtk-theme-name=$GTK_THEME
+gtk-icon-theme-name=$ICON_THEME
+gtk-font-name=Sans 10
+gtk-cursor-theme-name=Adwaita
+gtk-cursor-theme-size=0
+gtk-toolbar-style=GTK_TOOLBAR_BOTH_HORIZ
+gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
+gtk-button-images=0
+gtk-menu-images=0
+gtk-enable-event-sounds=1
+gtk-enable-input-feedback-sounds=1
+gtk-xft-antialias=1
+gtk-xft-hinting=1
+gtk-xft-hintstyle=hintmedium
+EOF
+
+if command -v gsettings >/dev/null 2>&1 && [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
+    gsettings set org.gnome.desktop.interface gtk-theme "$GTK_THEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface icon-theme "$ICON_THEME" 2>/dev/null || true
+    gsettings set org.gnome.desktop.interface color-scheme "$COLOR_SCHEME" 2>/dev/null || true
+fi
+
+# 5. Set Wallpaper from Theme backgrounds if available
+BG=""
+if [ -d "$THEME_PATH/backgrounds" ]; then
+    BG="$(find -L "$THEME_PATH/backgrounds" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | head -n 1 || true)"
+fi
+
+if [ -n "$BG" ] && [ -f "$BG" ]; then
+    ln -sfn "$BG" "$CURRENT_BG_LINK"
+    cat > "$HOME/.fehbg" <<EOF
+#!/bin/sh
+feh --no-fehbg --bg-fill "$BG"
+EOF
+    chmod +x "$HOME/.fehbg"
+    if command -v feh >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+        feh --bg-fill "$BG" >/dev/null 2>&1 || true
+    fi
+fi
+
+echo "Successfully applied theme: $THEME_NAME ($MODE mode)"

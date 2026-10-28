@@ -1,0 +1,195 @@
+
+set $mod Mod4
+
+# Only change focus by clicking or via keybindings, not by moving the mouse.
+focus_follows_mouse no
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below.
+font pango:Geist Mono 10
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# start a terminal (opens in the cwd of the currently focused terminal)
+bindsym $mod+Return exec --no-startup-id ~/.config/i3/scripts/open-terminal-cwd.sh
+
+# kill focused window
+bindsym $mod+Shift+q kill
+
+# close current workspace (kill every window on it; an empty, unfocused
+# workspace disappears on its own once nothing's left)
+bindsym $mod+Shift+w [workspace="__focused__"] kill
+
+# start dmenu (a program launcher)
+bindsym $mod+d exec "rofi -show run"
+
+# start firefox
+bindsym $mod+Shift+f exec firefox
+
+# change focus
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# move focused window
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move up
+bindsym $mod+Shift+semicolon move right
+
+# alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# split in horizontal orientation
+bindsym $mod+h split h
+
+# split in vertical orientation
+bindsym $mod+v split v
+
+# enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# change container layout (stacked, tabbed, toggle split)
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# toggle tiling / floating
+bindsym $mod+Shift+space floating toggle
+
+# change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# focus the parent container
+bindsym $mod+a focus parent
+
+# focus the child container
+#bindsym $mod+d focus child
+
+# switch to workspace
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+5 workspace 5
+bindsym $mod+6 workspace 6
+bindsym $mod+7 workspace 7
+bindsym $mod+8 workspace 8
+bindsym $mod+9 workspace 9
+bindsym $mod+0 workspace 10
+
+# move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+
+# reload the configuration file
+bindsym $mod+Shift+c reload
+# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r exec "killall -USR1 termite"; restart;
+# exit i3 (logs you out of your X session)
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# resize window (you can also use the mouse for that)
+mode "resize" {
+    # These bindings trigger as soon as you enter the resize mode
+    bindsym j resize shrink width 10 px or 10 ppt
+    bindsym k resize grow height 10 px or 10 ppt
+    bindsym l resize shrink height 10 px or 10 ppt
+    bindsym semicolon resize grow width 10 px or 10 ppt
+
+    # same bindings, but for the arrow keys
+    bindsym Left resize shrink width 10 px or 10 ppt
+    bindsym Down resize grow height 10 px or 10 ppt
+    bindsym Up resize shrink height 10 px or 10 ppt
+    bindsym Right resize grow width 10 px or 10 ppt
+
+    # back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+
+# i3bar with i3blocks
+bar {
+    status_command i3blocks -c ~/.config/i3/i3blocks.conf
+        i3bar_command i3bar -t
+        position top
+        height 30
+        font pango:Geist Mono 9
+        colors {
+            background #0a0a0a
+            statusline #a1a1aa
+            separator #1f1f1f
+            focused_workspace  #1f1f1f #1f1f1f #ededed
+            active_workspace   #0a0a0a #0a0a0a #71717a
+            inactive_workspace #0a0a0a #0a0a0a #71717a
+            urgent_workspace   #7a2e2e #7a2e2e #ededed
+            binding_mode       #7a2e2e #7a2e2e #ededed
+        }
+}
+
+# i3-gaps
+for_window [class="^.*"] border pixel 1
+gaps inner 4
+gaps outer 2
+smart_gaps off
+
+client.focused          #ffffff #0a0a0a #ededed #ffffff #ffffff
+client.focused_inactive #1f1f1f #0a0a0a #71717a #1f1f1f #1f1f1f
+client.unfocused        #1f1f1f #060606 #52525b #1f1f1f #1f1f1f
+client.urgent           #7a2e2e #7a2e2e #ededed #7a2e2e #7a2e2e
+client.background       #060606
+default_border pixel 1
+default_floating_border pixel 1
+
+# feh - Wallpaper Setter
+exec_always --no-startup-id sh ~/.fehbg
+
+# Compositor - tear-free rendering, no shadows, no transparency.
+# picom is not installed on this machine; using compton (already present) with
+# an equivalent config in the meantime. Once picom is installed, replace the
+# line below with:
+#   exec_always --no-startup-id picom --config ~/.config/picom/picom.conf
+exec_always --no-startup-id compton -b --config ~/.config/compton/compton.conf
+
+# VM Clipboard Fix
+exec_always --no-startup-id ~/.config/i3/clipboard_fix.sh
+
+# Resize Bindings
+bindsym $mod+Ctrl+Shift+Right resize shrink width 10 px or 10 ppt
+bindsym $mod+Ctrl+Shift+Up resize grow height 10 px or 10 ppt
+bindsym $mod+Ctrl+Shift+Down resize shrink height 10 px or 10 ppt
+bindsym $mod+Ctrl+Shift+Left resize grow width 10 px or 10 ppt
+
+# screenshot
+bindsym $mod+P exec flameshot gui
+
+# ==============================================================================
+# Omarchy Theme & Switcher Integration
+# ==============================================================================
+# Keybindings for Theme Switcher & Wallpaper cycling
+bindsym $mod+Shift+t exec --no-startup-id ~/.local/bin/parrot-theme-switcher
+bindsym $mod+Shift+b exec --no-startup-id ~/.local/bin/parrot-theme-bg-next
+
+# Dynamic theme styling (i3bar colors, window borders, container colors)
+include ~/.config/i3/colors.conf

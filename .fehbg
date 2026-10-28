@@ -1,0 +1,2 @@
+#!/bin/sh
+feh --no-fehbg --bg-fill ~/.wallpaper/pebble-04-contour-3840x2160.png

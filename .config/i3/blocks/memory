@@ -1,0 +1,3 @@
+#!/bin/sh
+# i3blocks [memory] block: used/total RAM
+free -h | awk '/^Mem:/ {print " "$3" / "$2}'

@@ -1,0 +1,16 @@
+#!/bin/sh
+# i3blocks [cpu_usage] block: overall CPU utilization, sampled over 1s
+read -r _ u1 n1 s1 i1 w1 x1 y1 z1 _ _ < /proc/stat
+sleep 1
+read -r _ u2 n2 s2 i2 w2 x2 y2 z2 _ _ < /proc/stat
+
+prev_idle=$((i1 + w1))
+idle=$((i2 + w2))
+prev_total=$((u1 + n1 + s1 + i1 + w1 + x1 + y1 + z1))
+total=$((u2 + n2 + s2 + i2 + w2 + x2 + y2 + z2))
+
+diff_total=$((total - prev_total))
+diff_idle=$((idle - prev_idle))
+[ "$diff_total" -le 0 ] && exit 0
+
+echo " $(( (1000 * (diff_total - diff_idle) / diff_total + 5) / 10 ))%"

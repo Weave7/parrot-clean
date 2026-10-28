@@ -1,0 +1,72 @@
+/* Rofi Theme Template */
+* {
+    ground:       {{ background }};
+    surface:      {{ dark_background }};
+    hairline:     {{ hairline }};
+    text-dim:     {{ muted }};
+    text-label:   {{ dark_foreground }};
+    text-2nd:     {{ foreground }};
+    text-primary: {{ bright_foreground }};
+    focus:        {{ accent }};
+
+    background-color: transparent;
+    text-color:        @text-primary;
+    font:              "Geist Mono 12";
+}
+
+window {
+    background-color: @surface;
+    border:           1px;
+    border-color:     @hairline;
+    border-radius:    0px;
+    width:            600px;
+    location:         center;
+}
+
+mainbox {
+    background-color: @surface;
+    padding: 8px;
+}
+
+inputbar {
+    background-color: @ground;
+    text-color:        @text-primary;
+    border:            0px 0px 1px 0px;
+    border-color:      @hairline;
+    padding:           10px;
+    children:          [ "entry" ];
+}
+
+entry {
+    background-color: transparent;
+    text-color:        @text-primary;
+    placeholder-color: @text-label;
+    placeholder:       "search";
+}
+
+listview {
+    background-color: transparent;
+    lines:             15;
+    columns:           3;
+    spacing:           2px;
+    scrollbar:         false;
+}
+
+element {
+    background-color: transparent;
+    text-color:        @text-2nd;
+    padding:           6px 10px;
+    border-radius:     0px;
+}
+
+element selected {
+    background-color: @hairline;
+    text-color:        @focus;
+    border:            0px 0px 0px 2px;
+    border-color:      @focus;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:        inherit;
+}

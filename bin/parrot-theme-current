@@ -1,0 +1,8 @@
+#!/bin/bash
+CURRENT_THEME_FILE="$HOME/.local/state/parrot/current/theme.name"
+
+if [ -f "$CURRENT_THEME_FILE" ]; then
+    cat "$CURRENT_THEME_FILE"
+else
+    echo "default"
+fi

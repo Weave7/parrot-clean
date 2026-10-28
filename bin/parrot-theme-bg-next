@@ -1,0 +1,55 @@
+#!/bin/bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/parrot"
+CURRENT_THEME_NAME="$STATE_DIR/current/theme.name"
+CURRENT_BG_LINK="$STATE_DIR/current/background"
+
+THEMES_DIR="${PARROT_THEMES_DIR:-$HOME/.config/parrot/themes}"
+[ -d "$THEMES_DIR" ] || THEMES_DIR="$(dirname "$SCRIPT_DIR")/themes"
+
+THEME_NAME="$(cat "$CURRENT_THEME_NAME" 2>/dev/null || echo "tokyo-night")"
+THEME_PATH="$THEMES_DIR/$THEME_NAME"
+
+if [ ! -d "$THEME_PATH/backgrounds" ]; then
+    echo "No backgrounds directory for theme $THEME_NAME" >&2
+    exit 1
+fi
+
+mapfile -t BACKGROUNDS < <(find -L "$THEME_PATH/backgrounds" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) | sort)
+
+TOTAL=${#BACKGROUNDS[@]}
+if [ "$TOTAL" -eq 0 ]; then
+    echo "No wallpapers found for theme $THEME_NAME" >&2
+    exit 1
+fi
+
+CURRENT_BG=""
+if [ -L "$CURRENT_BG_LINK" ]; then
+    CURRENT_BG="$(readlink "$CURRENT_BG_LINK" 2>/dev/null || true)"
+fi
+
+INDEX=-1
+for i in "${!BACKGROUNDS[@]}"; do
+    if [ "${BACKGROUNDS[$i]}" = "$CURRENT_BG" ]; then
+        INDEX=$i
+        break
+    fi
+done
+
+NEXT_INDEX=$(( (INDEX + 1) % TOTAL ))
+NEXT_BG="${BACKGROUNDS[$NEXT_INDEX]}"
+
+ln -sfn "$NEXT_BG" "$CURRENT_BG_LINK"
+cat > "$HOME/.fehbg" <<EOF
+#!/bin/sh
+feh --no-fehbg --bg-fill "$NEXT_BG"
+EOF
+chmod +x "$HOME/.fehbg"
+
+if command -v feh >/dev/null 2>&1 && [ -n "${DISPLAY:-}" ]; then
+    feh --bg-fill "$NEXT_BG" >/dev/null 2>&1 || true
+fi
+
+echo "Switched to background: $(basename "$NEXT_BG")"
