@@ -1,2 +1,4 @@
 i3-gaps/
 *.bak
+__pycache__/
+*.py[cod]

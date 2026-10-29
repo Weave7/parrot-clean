@@ -122,18 +122,37 @@ fi
 # 3. Install Geist Mono Font
 log "Setting up Geist Mono font..."
 if [ "$DRY_RUN" = false ]; then
-    mkdir -p ~/.local/share/fonts
-    if [ ! -d ~/.local/share/fonts/GeistMono ]; then
+    mkdir -p ~/.local/share/fonts/GeistMono
+    if [ -z "$(ls -A ~/.local/share/fonts/GeistMono 2>/dev/null)" ]; then
         tmp="$(mktemp -d)"
-        wget -q -O "$tmp/geist.zip" https://github.com/vercel/geist-font/releases/latest/download/geist-font.zip || true
-        if [ -f "$tmp/geist.zip" ]; then
-            unzip -qo "$tmp/geist.zip" -d "$tmp" || true
-            if [ -d "$tmp/GeistMono" ]; then
-                cp -r "$tmp/GeistMono" ~/.local/share/fonts/GeistMono
+        FONT_URL=""
+        if command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+            FONT_URL="$(curl -fsSL https://api.github.com/repos/vercel/geist-font/releases/latest 2>/dev/null | jq -r '.assets[]? | select(.name | test("^geist-font.*\\.zip$")) | .browser_download_url' | head -n 1 || true)"
+        fi
+        if [ -z "$FONT_URL" ]; then
+            FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/latest/download/GeistMono.zip"
+        fi
+
+        if curl -fsSL -o "$tmp/geist.zip" "$FONT_URL" 2>/dev/null || wget -q -O "$tmp/geist.zip" "$FONT_URL"; then
+            if [ -f "$tmp/geist.zip" ] && unzip -tq "$tmp/geist.zip" >/dev/null 2>&1; then
+                unzip -qo "$tmp/geist.zip" -d "$tmp" || true
+                mono_dir="$(find "$tmp" -type d -iname "*GeistMono*" | head -n 1)"
+                if [ -n "$mono_dir" ]; then
+                    cp -r "$mono_dir/." ~/.local/share/fonts/GeistMono/
+                else
+                    find "$tmp" -type f \( -name "*.otf" -o -name "*.ttf" \) -exec cp {} ~/.local/share/fonts/GeistMono/ \;
+                fi
+                fc-cache -f ~/.local/share/fonts || true
+                log "Geist Mono font installed."
+            else
+                log "Warning: Could not verify font archive. Skipping font installation."
             fi
+        else
+            log "Warning: Font download failed. Skipping font installation."
         fi
         rm -rf "$tmp"
-        fc-cache -f || true
+    else
+        log "Geist Mono font already installed."
     fi
 else
     echo "[DRY-RUN] Would download and install Geist Mono font"
@@ -162,7 +181,10 @@ if [ "$DRY_RUN" = false ]; then
     backup_copy "$REPO/.config/i3/i3blocks.conf" ~/.config/i3/i3blocks.conf
     backup_copy "$REPO/.config/i3/clipboard_fix.sh" ~/.config/i3/clipboard_fix.sh
     backup_copy "$REPO/.config/i3/scripts/open-terminal-cwd.sh" ~/.config/i3/scripts/open-terminal-cwd.sh
-    cp "$REPO"/.config/i3/blocks/* ~/.config/i3/blocks/
+    mkdir -p ~/.config/i3/blocks
+    for f in "$REPO/.config/i3/blocks"/*; do
+        [ -f "$f" ] && cp "$f" ~/.config/i3/blocks/
+    done
     chmod +x ~/.config/i3/clipboard_fix.sh ~/.config/i3/scripts/* ~/.config/i3/blocks/*
 
     # Compositor & App configs
@@ -173,15 +195,21 @@ if [ "$DRY_RUN" = false ]; then
     backup_copy "$REPO/.config/gtk-3.0/settings.ini" ~/.config/gtk-3.0/settings.ini
 
     # Wallpaper fallback
-    cp -r "$REPO/.wallpaper" ~/.wallpaper
+    mkdir -p ~/.wallpaper
+    cp -r "$REPO/.wallpaper/." ~/.wallpaper/
     backup_copy "$REPO/.fehbg" ~/.fehbg
     chmod +x ~/.fehbg
 
     # 5. Install Parrot Theme System
     log "Installing Omarchy themes and theme switcher..."
-    cp -r "$REPO/themes" ~/.config/parrot/themes
-    cp -r "$REPO/templates"/* ~/.config/parrot/templates/
-    cp "$REPO"/bin/* ~/.local/bin/
+    mkdir -p ~/.config/parrot/themes
+    cp -r "$REPO/themes/." ~/.config/parrot/themes/
+    mkdir -p ~/.config/parrot/templates
+    cp -r "$REPO/templates/." ~/.config/parrot/templates/
+    mkdir -p ~/.local/bin
+    for f in "$REPO/bin"/*; do
+        [ -f "$f" ] && cp "$f" ~/.local/bin/
+    done
     chmod +x ~/.local/bin/parrot-theme-* ~/.local/bin/render_template.py
 
     # 6. Oh-My-Zsh setup
